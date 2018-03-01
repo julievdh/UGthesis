@@ -1,12 +1,15 @@
 clear
 
 %% Defines the large 500 grid area
-lats = 45.5:0.05:51;
+gsize = 2*0.1; 
+% lats = 45.5:0.05:51;
+lats = 45.5:gsize:51;
 lats = lats';
-longs =-57:-0.05:-66;
+% longs =-57:-0.05:-66;
+longs =-57:-gsize:-66;
 longs = longs';
-elong = longs + -0.05;
-elat = lats + 0.05;
+elong = longs + -gsize;
+elat = lats + gsize;
 
 
 longgrid = repmat(longs,[size(lats,1),1]);
@@ -19,7 +22,7 @@ elonggrid = sort(elonggrid,1);
 Boxes = [longgrid latgrid elonggrid elatgrid]; % the corners of each grid square
 
 cd /Users/julievanderhoop/Documents/MATLAB/UGthesis
-[num,txt] = xlsread('Sightings_Tracker_Sheet.xlsx');
+[num,txt] = xlsread('Sightings_Tracker_Sheet_subset.xlsx');
 
 %% data cleaning
 % convert all longs to negative
@@ -49,16 +52,21 @@ end
 
 %% Takes the information from spdhdavg, but changes the lats and longs from the lower left hand corner
 %% of each grid square to the centre coordinate of the grid square
-Whale_count(:,1) = Boxes(:,1) - 0.05;
-Whale_count(:,2) = Boxes(:,2) + 0.05;
+Whale_count(:,1) = Boxes(:,1) - gsize;
+Whale_count(:,2) = Boxes(:,2) + gsize;
 Whale_count(:,3) = Boxes(:,5);
 Whale_count(:,4) = Whale_count(:,3)./sum(Boxes(:,5));
 
 %% Reshape into a surface/2D distribution
 
-A = reshape(Whale_count(:,3),length(lats),length(longs));
+A = reshape(Whale_count(:,4),length(lats),length(longs));
 figure(3), hold on
 mesh(flipud(longs),lats,A)
+
+%% resample at finer grid? 
+[Xq,Yq] = meshgrid(-66:gsize/2:-55,45:gsize/2:51); 
+
+Vq = interp2(flipud(longs),lats,Whale_count(:,4),Xq,Yq); 
 
 % Sample from distribution
 % N = 10; % number of samples
@@ -70,4 +78,10 @@ mesh(flipud(longs),lats,A)
 % plot(vals(1,:),vals(2,:),'ro')
 
 %% save
-save('GoSLpdf_Meg','A','Whales','lats','longs')
+save('GoSL2017_PDF_Meg','A','Whales','lats','longs','Whale_count')
+
+%% plot map and sightings
+GoSL_whales_fig
+hold on, plot(Whales(:,1),Whales(:,2),'o')
+ylim([45 50.5]), xlim([-66.7 -59])
+print -dpng GoSL_MegWhales_28Feb2018 -r300

@@ -47,7 +47,8 @@ end
 Whale_count(:,1) = Boxes(:,1) - 0.05;
 Whale_count(:,2) = Boxes(:,2) + 0.05;
 Whale_count(:,3) = Boxes(:,5);
-
+longs = longs - 0.05;
+lats = lats + 0.05; % recenter these too
 %% Reshape into a surface/2D distribution
 
 A = reshape(Whale_count(:,3),length(lats),length(longs));
